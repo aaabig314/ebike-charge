@@ -409,7 +409,7 @@
       <div class="field">
         <label>收费标准 / 运营商 <span class="hint">四套价目一键切换，切换后仍可手动改表</span></label>
         <div class="std-switch" id="stdSwitch">
-          <button class="std-btn active" data-std="A">标准一<small>电费 0.77 元/度<br>+ 服务费四档</small></button>
+          <button class="std-btn active" data-std="A">驴充充<small>电费 0.77 元/度<br>+ 服务费四档</small></button>
           <button class="std-btn" data-std="B">标准二<small>电费 0.81 元/度<br>+ 服务费五档</small></button>
           <button class="std-btn" data-std="C">铁塔充电<small>电费 0.63 元/度<br>+ 服务费六档</small></button>
           <button class="std-btn" data-std="D">鹏辉充电<small>1.58 元/度<br>按度一口价</small></button>
@@ -545,7 +545,7 @@
         </div>
         <div class="field">
           <label>充电桩最大功率 <span class="hint">最后一档上限</span></label>
-          <div class="input-row"><input type="number" id="maxPower" value="1000" min="100" max="20000" step="100"><span class="unit">W</span></div>
+          <div class="input-row"><input type="number" id="maxPower" value="800" min="100" max="20000" step="100"><span class="unit">W</span></div>
         </div>
       </div>
       <div class="hint" style="font-size:11px;color:var(--muted);line-height:1.8">
@@ -680,15 +680,15 @@
 /* 两套收费标准：最后一档的上限 = 充电桩最大功率 */
 const STANDARDS = {
   A: {
-    short: '标准一 · 电费 + 阶梯服务费',
+    short: '驴充充 · 电费 + 阶梯服务费',
     note: '电费 <b>0.77 元/度</b> + 服务费 <b>0.35 / 0.45 / 0.60 / 1.00</b> 元/小时（340 / 450 / 700 / 1000W 四档），两者相加。',
     tiers: [
       { hi: 340,  rate: 0.35 },
       { hi: 450,  rate: 0.45 },
       { hi: 700,  rate: 0.60 },
-      { hi: 1000, rate: 1.00 },
+      { hi: 800, rate: 1.00 },
     ],
-    maxPower: 1000,
+    maxPower: 800,
     billMode: 'both',
     energyPrice: 0.77,
     bounds: 'end-inclusive',
@@ -763,7 +763,7 @@ const DEFAULT_STATE = {
   volts: 48,
   ah: 20,
   power: 150,          // 充电器功率 W
-  maxPower: 1000,      // 充电桩最大功率（最后一档上限）
+  maxPower: 800,       // 充电桩最大功率（最后一档上限）
   hoursManual: null,   // 手动覆盖的充满时长（小时）
   roundMode: 'min',
   billMode: 'both',    // tier=按功率档计时 / kwh=按电量计费 / both=电费+计时服务费
@@ -1357,11 +1357,13 @@ function renderCompare() {
     const na = state.power > max;
     const f = na ? null : feeForStandard(s.key, state.power);
     const dot = cmpState.dots[i];
-    if (na) { dot.setAttribute('opacity', 0); }
-    else {
-      dot.setAttribute('opacity', 1);
-      dot.setAttribute('cx', cx.toFixed(1));
-      dot.setAttribute('cy', Y(f.fee).toFixed(1));
+    if (dot) {                       // 防御：万一取不到标记点，也不该中断整页渲染
+      if (na) { dot.setAttribute('opacity', 0); }
+      else {
+        dot.setAttribute('opacity', 1);
+        dot.setAttribute('cx', cx.toFixed(1));
+        dot.setAttribute('cy', Y(f.fee).toFixed(1));
+      }
     }
     return { key: s.key, color: s.color, name: seriesShort(s.key), max: max, na: na, fee: f ? f.fee : null, perKwh: f ? f.perKwh : null };
   });
@@ -1391,7 +1393,7 @@ function renderCompare() {
     ? ('当前 <b>' + state.power + 'W</b>：最便宜是 <b style="color:' + bestRow.color + '">' + bestRow.name + '</b>（' + money(bestRow.fee) + '，' + fmt(bestRow.perKwh, 2) + ' 元/度）'
       + (ok.length > 1 ? '，最贵 ' + worstRow.name + '（' + money(worstRow.fee) + '），差 ' + money(worstRow.fee - bestRow.fee) + '。' : '。')
       + '　全场最省：<b>' + gb.p + 'W</b> 下 ' + seriesShort(gb.key) + ' ' + money(gb.fee) + '。'
-      + '<br>曲线画到各家功率上限为止（标准一/二 ' + STANDARDS.A.maxPower + 'W，铁塔/鹏辉 ' + STANDARDS.C.maxPower + 'W）。')
+      + '<br>曲线画到各家功率上限为止（' + seriesShort('A') + '/' + seriesShort('B') + ' ' + STANDARDS.A.maxPower + 'W，' + seriesShort('C') + '/' + seriesShort('D') + ' ' + STANDARDS.C.maxPower + 'W）。')
     : '当前功率超出所有价目的上限。';
 }
 
